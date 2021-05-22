@@ -1,13 +1,15 @@
 module LetLanguage where
-
+{-
+Keep it simple for the moment ... explicitly numbers
+-}
 
 --data Program = LetExp
 type Var = String
-data LLExp a = ConstExp a
-                  | DiffExp (LLExp a) (LLExp a)
-                  | ZeroQExp (LLExp a)
-                  | IfExp (LLExp a) (LLExp a) (LLExp a)
+data LLExp = ConstExp Int
+                  | DiffExp LLExp  LLExp
+                  | ZeroQExp LLExp
+                  | IfExp LLExp LLExp LLExp
                   | VarExp Var
-                  | LetExp Var (LLExp a) (LLExp a) 
+                  | LetExp Var LLExp LLExp
                   deriving (Show)
   

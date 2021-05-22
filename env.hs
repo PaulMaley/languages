@@ -1,7 +1,9 @@
 module Env where
 
 type Var = String
-type Val = String
+--type Val = String
+type Val = Int
+--data Val = BoolVal bool | NumVal Int
 
 {-
 Just a note ... what about applyEnv when
@@ -20,7 +22,7 @@ class Environment env where
 data LPV = LPVEmpty | LPV [(Var,Val)] deriving (Show)
 
 get :: Var -> LPV -> Val
-get v LPVEmpty = "Fuck Up!!"
+get v LPVEmpty = error "Fuck Up!!"
 get v (LPV ((e1var,e1val):es)) 
   | v == e1var = e1val
   | otherwise = get v (LPV es)
