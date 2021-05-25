@@ -1,4 +1,6 @@
 {-
+Upgrade to use types in the environment
+
 OK, this is a wierd mxture of stuff ... but what the hell
 Ex: Var is the same idea in both modules ... 
 
@@ -11,20 +13,24 @@ Also modify a bit ..... remove the Zero constructor ...
 -}
 module LetEval (valueOf) where
 
-import qualified Env as E
-import qualified LetLanguage as L
+import DataTypes
+import Env 
+import LetLanguage 
 
-
--- this is "eval" but I'm following the book ...
-valueOf :: E.Environment env => L.LLExp -> env -> Int 
-valueOf (L.ConstExp x)  _  = x 
-valueOf (L.VarExp s) env = E.applyEnv env s
-valueOf (L.DiffExp e1 e2) env = (valueOf e1 env)-(valueOf e2 env)
-valueOf (L.LetExp var valexp bodyexp) env = valueOf bodyexp 
-                                            (E.extendEnv var (valueOf valexp env) env)
-valueOf (L.IfExp pred et ef) env = if (valueOf pred env) == 0
+valueOf :: Environment env => LLExp -> env -> Val 
+valueOf (ConstExp x)  _  = x 
+valueOf (VarExp s) env = applyEnv env s
+valueOf (ZeroQExp e) env = if getNum (valueOf e env) == 0 
+                             then (BoolVal True)
+                             else (BoolVal False)  
+valueOf (DiffExp e1 e2) env = NumVal (n1 - n2) 
+                              where 
+                                n1 = getNum (valueOf e1 env)
+                                n2 = getNum (valueOf e2 env)
+valueOf (IfExp pred et ef) env = if getBool (valueOf pred env)
                                    then valueOf et env
                                    else valueOf ef env
-valueOf _ _ = error "Not implemented"
-
+valueOf (LetExp var valexp bodyexp) env = valueOf bodyexp 
+                                            (extendEnv var (valueOf valexp env) env)
+--valueOf _ _ = error "Not implemented"
 

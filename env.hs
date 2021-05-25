@@ -1,15 +1,22 @@
 module Env where
 
-type Var = String
---type Val = String
-type Val = Int
---data Val = BoolVal bool | NumVal Int
+{-
+Introduce types ... environment can now contain variables of different
+types
+-}
+
+import DataTypes
+
+--type Var = String
+--type Val = Int
+--data Val = BoolVal Bool | NumVal Int deriving (Show)
 
 {-
-Just a note ... what about applyEnv when
-the variable is not defined in the environment ..
-also ... adding a variable which is already there ....
-things to remedy obviously
+TODO:
+1) Deal with a call to applyEnv when the variable is not defined in the 
+environment ..
+2) Adding a variable which is already there .... It seems to be correct
+to have two entries ... like shadowing ?
 -}
 
 class Environment env where 
@@ -22,7 +29,7 @@ class Environment env where
 data LPV = LPVEmpty | LPV [(Var,Val)] deriving (Show)
 
 get :: Var -> LPV -> Val
-get v LPVEmpty = error "Fuck Up!!"
+get v LPVEmpty = error "Environment is empty!!"
 get v (LPV ((e1var,e1val):es)) 
   | v == e1var = e1val
   | otherwise = get v (LPV es)
