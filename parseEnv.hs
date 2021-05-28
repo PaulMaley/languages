@@ -21,6 +21,9 @@ Ext ::= Var = Val
 Val ::= NumVal n | BoolVal (T|F)
 -}
 
+module ParseEnv where
+
+
 import Control.Applicative
 import Data.Foldable
 import DataTypes
