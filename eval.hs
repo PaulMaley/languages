@@ -9,7 +9,7 @@ usage example: ./eval "If(ZeroQ(-(3,x)),1,y)" "[x=2,y=3]"
 
 import System.Environment 
 import System.IO
-import DataTypes
+--import DataTypes
 import Parser
 import ParseLet
 import ParseEnv

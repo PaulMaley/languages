@@ -22,3 +22,13 @@ examples:
 
 Next step -- procedures ....
 
+Combined `dataTypes` and `letLanguage` modules ... othewise circular dependancy not accepted.  
+New `proc` data type seems to be acceptable:  
+```
+*LetLanguage> ProcVal "y" (IfExp (ZeroQExp (VarExp "y")) (ConstExp (NumVal 1)) (ConstExp (NumVal 2)))
+ProcVal "y" (IfExp (ZeroQExp (VarExp "y")) (ConstExp (NumVal 1)) (ConstExp (NumVal 2)))
+```
+
+Hmmm ... this is harder than it looks (and it looks already hard). Refactored the code due to 
+mutually dependent modules. All data types are now togther in one place.
+

@@ -15,7 +15,7 @@ module LetEval (valueOf) where
 
 import DataTypes
 import Env 
-import LetLanguage 
+--import LetLanguage 
 
 valueOf :: Environment env => LLExp -> env -> Val 
 valueOf (ConstExp x)  _  = x 
@@ -32,5 +32,8 @@ valueOf (IfExp pred et ef) env = if getBool (valueOf pred env)
                                    else valueOf ef env
 valueOf (LetExp var valexp bodyexp) env = valueOf bodyexp 
                                             (extendEnv var (valueOf valexp env) env)
+--valueOf (CallExp (ProcVal rator) rand) env = 
+--valueOf (ProcExp var bodyexp) env = ProcVal  
+
 --valueOf _ _ = error "Not implemented"
 

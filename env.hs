@@ -6,6 +6,7 @@ types
 -}
 
 import DataTypes
+--import LetLanguage
 
 --type Var = String
 --type Val = Int
@@ -18,12 +19,12 @@ environment ..
 2) Adding a variable which is already there .... It seems to be correct
 to have two entries ... like shadowing ?
 -}
-
+{-
 class Environment env where 
   emptyEnv :: env
   applyEnv :: env -> Var -> Val
   extendEnv :: Var -> Val -> env -> env
-
+-}
 
 -- An implentation
 data LPV = LPVEmpty | LPV [(Var,Val)] deriving (Show)
