@@ -17,7 +17,8 @@ import DataTypes
 import Env 
 --import LetLanguage 
 
-valueOf :: Environment env => LLExp -> env -> Val 
+--valueOf :: Environment env => LLExp -> env -> Val 
+valueOf :: LLExp -> Env -> Val 
 valueOf (ConstExp x)  _  = x 
 valueOf (VarExp s) env = applyEnv env s
 valueOf (ZeroQExp e) env = if getNum (valueOf e env) == 0 
@@ -32,8 +33,14 @@ valueOf (IfExp pred et ef) env = if getBool (valueOf pred env)
                                    else valueOf ef env
 valueOf (LetExp var valexp bodyexp) env = valueOf bodyexp 
                                             (extendEnv var (valueOf valexp env) env)
---valueOf (CallExp (ProcVal rator) rand) env = 
---valueOf (ProcExp var bodyexp) env = ProcVal  
 
+valueOf (ProcExp var bodyexp) env = ProcVal var bodyexp env 
+valueOf (CallExp rator rand) env = let proc = valueOf rator env 
+                                       rho1 = extendEnv (getVarFromProc proc) 
+                                                                  (valueOf rand env) 
+                                                                  (getEnvFromProc proc)
+                                             in 
+                                               valueOf (getBodyFromProc proc) rho1 
+                                                               
 --valueOf _ _ = error "Not implemented"
 

@@ -1,7 +1,10 @@
 module DataTypes where 
 
+data LPV = LPVEmpty | LPV [(Var,Val)] deriving (Show)
+
 type Var = String
-data Val = BoolVal Bool | NumVal Int | ProcVal Var LLExp deriving (Show)
+type Env = LPV  
+data Val = BoolVal Bool | NumVal Int | ProcVal Var LLExp Env  deriving (Show)
 
 getNum :: Val -> Int
 getNum (NumVal n) = n
@@ -9,7 +12,19 @@ getNum _ = error "Non numeric value"
 
 getBool :: Val -> Bool
 getBool (BoolVal b) = b
-getBool _ = error "Non boolean type"
+getBool _ = error "Non boolean value"
+
+getVarFromProc :: Val -> Var
+getVarFromProc (ProcVal var _ _) = var
+getVarFromProc _ = error "Non Proc value"
+
+getBodyFromProc :: Val -> LLExp
+getBodyFromProc (ProcVal _ body _) = body
+getBodyFromProc _ = error "Non Proc value"
+
+getEnvFromProc :: Val -> Env
+getEnvFromProc (ProcVal _ _ env) = env
+getEnvFromProc _ = error "Non Proc value"
 
 class Environment env where 
   emptyEnv :: env

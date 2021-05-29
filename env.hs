@@ -27,7 +27,7 @@ class Environment env where
 -}
 
 -- An implentation
-data LPV = LPVEmpty | LPV [(Var,Val)] deriving (Show)
+--data LPV = LPVEmpty | LPV [(Var,Val)] deriving (Show)
 
 get :: Var -> LPV -> Val
 get v LPVEmpty = error "Environment is empty!!"

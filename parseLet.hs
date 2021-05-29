@@ -15,33 +15,19 @@ module ParseLet where
 import Parser
 import Control.Applicative
 import DataTypes
---import LetLanguage
 
 lexp :: Parser LLExp
 lexp = do
         e <- lconst
         return e
-       <|> do 
-             e <- lvar
-             return e 
-       <|> do
-             e <- ldiff
-             return e 
-       <|> do
-             e <- lif
-             return e
-       <|> do
-             e <- lzeroq
-             return e 
-       <|> do
-             e <- llet
-             return e
-{-
-lconst :: Parser LLExp
-lconst = do
-          n <- integer
-          return (ConstExp n)
--}
+       <|> lvar
+       <|> ldiff
+       <|> lif
+       <|> lzeroq
+       <|> llet
+       <|> lproc
+       <|> lcall
+
 
 lconst :: Parser LLExp
 lconst = do
@@ -95,6 +81,24 @@ llet = do
          symbol "In"
          body <- lexp
          return (LetExp s val body)
+
+lproc :: Parser LLExp
+lproc = do 
+          symbol "Proc"
+          symbol "("
+          id <- identifier
+          symbol ")"
+          body <- lexp
+          return (ProcExp id body)
+
+lcall :: Parser LLExp
+lcall = do
+          symbol "("
+          rator <- lexp
+          rand <- lexp
+          symbol ")"
+          return (CallExp rator rand)
+
 
 
 

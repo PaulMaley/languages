@@ -32,3 +32,6 @@ ProcVal "y" (IfExp (ZeroQExp (VarExp "y")) (ConstExp (NumVal 1)) (ConstExp (NumV
 Hmmm ... this is harder than it looks (and it looks already hard). Refactored the code due to 
 mutually dependent modules. All data types are now togther in one place.
 
+OK, works !! Minor miracle. Even correctly evaluates the program at the top of page 76.
+
+
