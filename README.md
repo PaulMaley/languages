@@ -34,4 +34,30 @@ mutually dependent modules. All data types are now togther in one place.
 
 OK, works !! Minor miracle. Even correctly evaluates the program at the top of page 76.
 
+## Current syntax 
+What does the language look like now? Strings that can be parsed: 
+```
+x  
+"x"  
+Let "x" = 1 In x  
+-(3,4)  
+Let x = 1 In -(x,1)  
+ZeroQ(x)  
+If(ZeroQ(x), x, y)  
+Let f = Proc (x) -(x,1) In (f 1)
+Let f = Proc (x) Proc (y) -(x,-(0,y)) In ((f 2) 3)
+```
+
+Apparently we already do recursive calls, but I don't understand the code.  
+Need to modify `eval` to read a program from a file ....
+
+Upgrade complete ... no environment and code is a bit messy .. to redo later.  
+Example:
+```
+./eval --file ./progs/proc77.let 
+```
+
+
+
+
 

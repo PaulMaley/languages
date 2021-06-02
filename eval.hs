@@ -5,6 +5,11 @@ empty environment
 Upgrade: parse an execution environment ...
 
 usage example: ./eval "If(ZeroQ(-(3,x)),1,y)" "[x=2,y=3]"
+
+upgrade to provide help and read from a file
+
+
+
 -}
 
 import System.Environment 
@@ -16,14 +21,29 @@ import ParseEnv
 import LetEval
 import Env
 
+data Act = Help | ReadFile String | CmdLine
 
 main = do
          args <- getArgs
+{-
+         let choice = case args of 
+                     ("--help":_) -> Help
+                     ("--file":fn:_) -> ReadFile fn
+                     (exp:env: 
+-}
          let out = case args of
-                     (exp:env:[]) -> evaluate exp env
-                     (exp:[]) -> evaluate exp "[]"
-                     _ -> "usage: ./eval <<Let Expression>>  <<Envrionment>>" 
-         putStrLn out
+                     ("--help":_) -> return usage
+                     ("--file":fn:_) -> do
+                                          exp <- readFile fn  
+                                          return (evaluate exp "[]") 
+                     (exp:env:[]) -> return (evaluate exp env)
+                     (exp:[]) -> return (evaluate exp "[]")
+                     _ -> return usage 
+         out' <- out
+         putStrLn out'
+
+usage :: String
+usage =  "usage: ./eval <<Let Expression>>  <<Envrionment>>" 
 
 evaluate :: String -> String -> String 
 evaluate exp env = let pexp = parse lexp exp
