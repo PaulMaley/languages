@@ -30,6 +30,8 @@ class Environment env where
   emptyEnv :: env
   applyEnv :: env -> Var -> Val
   extendEnv :: Var -> Val -> env -> env
+-- Doesn't seem to be necessary
+--  extendEnvRec :: Var -> Val -> env -> env
 
 data LLExp = ConstExp Val
                   | DiffExp LLExp  LLExp
@@ -39,4 +41,5 @@ data LLExp = ConstExp Val
                   | LetExp Var LLExp LLExp
                   | ProcExp Var LLExp
                   | CallExp LLExp LLExp
+                  | LetRecExp Var Var LLExp LLExp
                   deriving (Show)

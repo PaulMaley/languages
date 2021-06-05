@@ -1,0 +1,1 @@
+Letrec double (x) = If(ZeroQ(x),0,-((double -(x,1)), -2)) In (double 6)

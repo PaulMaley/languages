@@ -27,7 +27,7 @@ lexp = do
        <|> llet
        <|> lproc
        <|> lcall
-
+       <|> lletrec
 
 lconst :: Parser LLExp
 lconst = do
@@ -99,7 +99,18 @@ lcall = do
           symbol ")"
           return (CallExp rator rand)
 
-
+lletrec :: Parser LLExp
+lletrec = do
+         symbol "Letrec"
+         fid <- identifier
+         symbol "("
+         pid <- identifier
+         symbol ")"
+         symbol "=" 
+         fbody <- lexp
+         symbol "In"
+         letrecexp <- lexp
+         return (LetRecExp fid pid fbody letrecexp)
 
 
 

@@ -1,0 +1,7 @@
+Let makerec = Proc (f)
+                     Let d = Proc (x)
+                              Proc (z) ((f (x x)) z)
+                     In Proc (n) ((f (d d)) n)
+In Let maketimes4 = Proc (f) Proc (x)
+                            If(ZeroQ(x),0,-((f -(x,1)), -4))
+In Let times4 = (makerec maketimes4) In (times4 3)

@@ -41,6 +41,12 @@ valueOf (CallExp rator rand) env = let proc = valueOf rator env
                                                                   (getEnvFromProc proc)
                                              in 
                                                valueOf (getBodyFromProc proc) rho1 
-                                                               
+valueOf (LetRecExp fid pid fbody letrecexp) env = valueOf letrecexp 
+                                                    (extendEnv fid (ProcVal pid fbody env) env) 
+--                                                    (extendEnvRec fid (ProcVal pid fbody env) env) 
+{-
+ Looks like the extendEncRec is not needed ... setting the environment to contain the
+ function itself is done as a case of applyEnv.
+-}
 --valueOf _ _ = error "Not implemented"
 

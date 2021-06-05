@@ -8,8 +8,8 @@ stuff in Haskell as opposed to Scheme.
 
 In the code all `symbol`s (`If`, `Let`, etc.) start with a capital
 letter, this is so they don't get picked up by the `identifier`
-parser. 
- 
+parser.
+
 First milestone: `eval` program.
 ```
 usage: ./eval <<LetExpression>> <<Environment>>
@@ -29,13 +29,13 @@ New `proc` data type seems to be acceptable:
 ProcVal "y" (IfExp (ZeroQExp (VarExp "y")) (ConstExp (NumVal 1)) (ConstExp (NumVal 2)))
 ```
 
-Hmmm ... this is harder than it looks (and it looks already hard). Refactored the code due to 
+Hmmm ... this is harder than it looks (and it looks already hard). Refactored the code due to
 mutually dependent modules. All data types are now togther in one place.
 
 OK, works !! Minor miracle. Even correctly evaluates the program at the top of page 76.
 
 ## Current syntax 
-What does the language look like now? Strings that can be parsed: 
+What does the language look like now? Strings that can be parsed:
 ```
 x  
 "x"  
@@ -48,16 +48,40 @@ Let f = Proc (x) -(x,1) In (f 1)
 Let f = Proc (x) Proc (y) -(x,-(0,y)) In ((f 2) 3)
 ```
 
+## Upgrade `eval` program
 Apparently we already do recursive calls, but I don't understand the code.  
 Need to modify `eval` to read a program from a file ....
 
 Upgrade complete ... no environment and code is a bit messy .. to redo later.  
 Example:
 ```
-./eval --file ./progs/proc77.let 
+./eval --file ./progs/proc77.let
 ```
 
+## Add letrec
+For (more easily implemented) recursive calls   
+I don't think I need to change the Env interface; `extendEnv` already handles it, no ?
+```
+extendEnv "f" (ProcVal "x" (VarExp "x") LPVEmpty) LPVEmpty
+```
+seems to work ok ... No, only compiles !!  
 
+Recursive function identifiers are not put into the environment : the double example
+gives an error "double" not in environment !! Ha. Maybe I do need to change the Env interface.
 
-
-
+```
+Var ::= String
+NumVal ::= Integer
+BoolVal ::= True | False
+Exp ::= ConstExp | DiffExp | ZeroQExp | IfExp | VarExp |  
+        LetExp | ProcExp | CallExp | LetRecExp  
+ConstExp ::= NumVal | BoolVal
+DiffExp ::= -(Exp,Exp)
+ZeroQExp ::= ZeroQ(Exp)
+IfExp ::= If(Exp,Exp,Exp)
+VarExp ::= Var
+LetExp ::= Let Var = Exp In Exp
+ProcExp ::= Proc (Var) Exp
+CallExp ::= (Exp Exp)
+LetRecExp ::= LetRec Var (Var) = Exp In Exp
+```
