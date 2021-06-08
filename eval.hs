@@ -14,12 +14,13 @@ upgrade to provide help and read from a file
 
 import System.Environment 
 import System.IO
---import DataTypes
+import DataTypes
 import Parser
 import ParseLet
 import ParseEnv
 import LetEval
 import Env
+import Store 
 
 data Act = Help | ReadFile String | CmdLine
 
@@ -51,5 +52,6 @@ evaluate exp env = let pexp = parse lexp exp
                    in case (pexp,penv) of
                        ([],_) -> "Failed to parse expresssion"
                        (_,[]) -> "Failed to parse environment"
-                       ([(exp',_)],[(env',_)]) -> show (valueOf exp' env')
+                       ([(exp',_)],[(env',_)]) -> show (valueOf exp' env' (SIS []))  -- Empty Simple Int Store
+--                       ([(exp',_)],[(env',_)]) -> show (valueOf exp' env')
 

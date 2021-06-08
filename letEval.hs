@@ -10,43 +10,63 @@ this language we need numbers and booleans ...
 In the book the env returns SchemeTypes !!
 
 Also modify a bit ..... remove the Zero constructor ...
+
+Upgrade to include Store ...
 -}
 module LetEval (valueOf) where
 
 import DataTypes
 import Env 
---import LetLanguage 
+import Store 
 
---valueOf :: Environment env => LLExp -> env -> Val 
-valueOf :: LLExp -> Env -> Val 
-valueOf (ConstExp x)  _  = x 
-valueOf (VarExp s) env = applyEnv env s
-valueOf (ZeroQExp e) env = if getNum (valueOf e env) == 0 
-                             then (BoolVal True)
-                             else (BoolVal False)  
-valueOf (DiffExp e1 e2) env = NumVal (n1 - n2) 
-                              where 
-                                n1 = getNum (valueOf e1 env)
-                                n2 = getNum (valueOf e2 env)
-valueOf (IfExp pred et ef) env = if getBool (valueOf pred env)
-                                   then valueOf et env
-                                   else valueOf ef env
-valueOf (LetExp var valexp bodyexp) env = valueOf bodyexp 
-                                            (extendEnv var (valueOf valexp env) env)
 
-valueOf (ProcExp var bodyexp) env = ProcVal var bodyexp env 
-valueOf (CallExp rator rand) env = let proc = valueOf rator env 
-                                       rho1 = extendEnv (getVarFromProc proc) 
-                                                                  (valueOf rand env) 
-                                                                  (getEnvFromProc proc)
-                                             in 
-                                               valueOf (getBodyFromProc proc) rho1 
-valueOf (LetRecExp fid pid fbody letrecexp) env = valueOf letrecexp 
-                                                    (extendEnv fid (ProcVal pid fbody env) env) 
---                                                    (extendEnvRec fid (ProcVal pid fbody env) env) 
-{-
- Looks like the extendEncRec is not needed ... setting the environment to contain the
- function itself is done as a case of applyEnv.
--}
---valueOf _ _ = error "Not implemented"
+valueOf :: LLExp -> Env -> Str -> (Val,Str)
+valueOf exp env str = case exp of 
+                        (ConstExp x) -> (x,str)
+                        (VarExp id) -> ((applyEnv env id),str)
+                        (ZeroQExp e) -> if (getNum . fst) (valueOf e env str) == 0
+                                        then (BoolVal True, str)
+                                        else (BoolVal False, str)
+                        (DiffExp e1 e2) -> (NumVal (n1-n2), str)
+                                           where
+                                             n1 = (getNum . fst) (valueOf e1 env str)
+                                             n2 = (getNum . fst) (valueOf e2 env str)
+
+                        (LetExp var valexp bodyexp) -> let (val,s1) = valueOf valexp env str
+                                                       in
+                                                         valueOf bodyexp (extendEnv var val env) s1  
+                        (NewRefExp e) -> let (val,s1) = valueOf e env str
+                                         in
+                                           newRef val s1 
+
+                        (DeRefExp e) -> let (val,s1) = valueOf e env str
+                                        in
+                                          (deRef val s1, s1)
+
+                        (SetRefExp e v) -> let (rval,s1) = valueOf e env str
+                                               (vval,s2) = valueOf v env s1
+                                           in
+                                             (vval, setRef rval vval s2) 
+
+                        (IfExp pred et ef) -> let (b,s1) = valueOf pred env str 
+                                              in 
+                                                if getBool b
+                                                then valueOf et env s1
+                                                else valueOf ef env s1
+
+                        (ProcExp var bodyexp) -> (ProcVal var bodyexp env, str) 
+
+                        (CallExp rator rand) -> let (proc,s1) = valueOf rator env str 
+                                                    (rand',s2) = valueOf rand env s1 
+                                                    rho1 = extendEnv (getVarFromProc proc) 
+                                                                     rand' 
+                                                                     (getEnvFromProc proc)
+                                                in 
+                                                  valueOf (getBodyFromProc proc) rho1 s2 
+
+                        (LetRecExp fid pid fbody letrecexp) -> valueOf letrecexp 
+                                                                       (extendEnv fid (ProcVal pid fbody env) env) 
+                                                                       str
+
+
 

@@ -67,7 +67,10 @@ extendEnv "f" (ProcVal "x" (VarExp "x") LPVEmpty) LPVEmpty
 seems to work ok ... No, only compiles !!  
 
 Recursive function identifiers are not put into the environment : the double example
-gives an error "double" not in environment !! Ha. Maybe I do need to change the Env interface.
+gives an error "double" not in environment !! Ha. Maybe I do need to change the Env interface - fixed (modified `applEnv`).
+
+## Add State (chap 4)
+Language is now:
 
 ```
 Var ::= String
@@ -84,4 +87,11 @@ LetExp ::= Let Var = Exp In Exp
 ProcExp ::= Proc (Var) Exp
 CallExp ::= (Exp Exp)
 LetRecExp ::= LetRec Var (Var) = Exp In Exp
+NewRefExp ::= NewRef(Exp)
+DeRefExp ::= DeRef(Exp)
+SetRefExp ::= SetRef(Exp,Exp)
 ```
+
+`SetRefExp` modifies the store and returns a value equal to the value
+placed into the store.
+

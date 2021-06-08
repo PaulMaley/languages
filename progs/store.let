@@ -1,0 +1,3 @@
+Let x = NewRef(3) In Let f = Proc(z) -(z,DeRef(x)) In (f DeRef(x))
+
+

@@ -1,10 +1,15 @@
 module DataTypes where 
 
+type Ref = Int
+
 data LPV = LPVEmpty | LPV [(Var,Val)] deriving (Show)
+
+data SIS = SIS [(Val,Val)] deriving (Show)
+type Str = SIS
 
 type Var = String
 type Env = LPV  
-data Val = BoolVal Bool | NumVal Int | ProcVal Var LLExp Env  deriving (Show)
+data Val = BoolVal Bool | NumVal Int | ProcVal Var LLExp Env | RefVal Ref  deriving (Show)
 
 getNum :: Val -> Int
 getNum (NumVal n) = n
@@ -33,6 +38,12 @@ class Environment env where
 -- Doesn't seem to be necessary
 --  extendEnvRec :: Var -> Val -> env -> env
 
+class Store str where 
+  empty :: str
+  newRef :: Val -> str -> (Val,str)
+  deRef :: Val -> str -> Val
+  setRef :: Val -> Val -> str -> str
+
 data LLExp = ConstExp Val
                   | DiffExp LLExp  LLExp
                   | ZeroQExp LLExp
@@ -42,4 +53,7 @@ data LLExp = ConstExp Val
                   | ProcExp Var LLExp
                   | CallExp LLExp LLExp
                   | LetRecExp Var Var LLExp LLExp
+                  | NewRefExp LLExp 
+                  | DeRefExp LLExp
+                  | SetRefExp LLExp LLExp
                   deriving (Show)

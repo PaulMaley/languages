@@ -28,6 +28,9 @@ lexp = do
        <|> lproc
        <|> lcall
        <|> lletrec
+       <|> lnewref
+       <|> lderef
+       <|> lsetref
 
 lconst :: Parser LLExp
 lconst = do
@@ -111,6 +114,35 @@ lletrec = do
          symbol "In"
          letrecexp <- lexp
          return (LetRecExp fid pid fbody letrecexp)
+
+lnewref :: Parser LLExp
+lnewref = do
+            symbol "NewRef"
+            symbol "("
+            e <- lexp
+            symbol ")"
+            return (NewRefExp e)
+
+lderef :: Parser LLExp
+lderef = do 
+           symbol "DeRef"
+           symbol "("
+           e <- lexp
+           symbol ")"
+           return (DeRefExp e)
+
+lsetref :: Parser LLExp
+lsetref = do 
+            symbol "SetRef"
+            symbol "("
+            id <- lexp
+            symbol ","
+            val <- lexp
+            symbol ")"
+            return (SetRefExp id val)
+
+
+
 
 
 
