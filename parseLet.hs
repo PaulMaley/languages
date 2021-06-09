@@ -31,6 +31,7 @@ lexp = do
        <|> lnewref
        <|> lderef
        <|> lsetref
+       <|> lbegin
 
 lconst :: Parser LLExp
 lconst = do
@@ -141,11 +142,22 @@ lsetref = do
             symbol ")"
             return (SetRefExp id val)
 
+lbegin :: Parser LLExp
+lbegin = do 
+           symbol "Begin"
+           es <- lexplist
+           symbol "End"
+           return (BeginExp es)
 
-
-
-
-
+lexplist :: Parser [LLExp]
+lexplist = do
+             e <- lexp
+             symbol ";" 
+             es <- lexplist
+             return (e:es)
+            <|> do
+                  e <- lexp
+                  return [e]
 
 
          

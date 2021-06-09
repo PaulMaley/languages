@@ -56,4 +56,5 @@ data LLExp = ConstExp Val
                   | NewRefExp LLExp 
                   | DeRefExp LLExp
                   | SetRefExp LLExp LLExp
+                  | BeginExp [LLExp]               -- A bit of a cheat
                   deriving (Show)

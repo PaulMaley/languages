@@ -95,3 +95,17 @@ SetRefExp ::= SetRef(Exp,Exp)
 `SetRefExp` modifies the store and returns a value equal to the value
 placed into the store.
 
+## BUG
+```
+"Let f = Let y = 1 In Proc (x) y In (f 3)"
+```
+Gives `y` not found in the Environment .... this is similar to the
+structure of the `counter` program which is giving problems but 
+which is more complicated (`Begin` expresssion).
+
+**This problem already existed** so merge back into `master` and
+introduce `trace`facility to see what is happening ...
+
+
+
+

@@ -1,0 +1,9 @@
+Let g = Proc (dummy)
+          Let counter = NewRef(0)
+          In Begin
+               SetRef(counter, -(DeRef(counter), -1)); 
+               DeRef(counter)
+             End
+          In Let a = (g 11)
+          In Let b = (g 11)
+             In -(a,b)

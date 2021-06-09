@@ -1,0 +1,3 @@
+Let fact = Proc (n) -(n,-1) In Let fact = Proc (n)
+                          If(ZeroQ(n),1,-(n,(fact -(n,1))))
+In (fact 5)

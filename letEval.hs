@@ -67,6 +67,9 @@ valueOf exp env str = case exp of
                         (LetRecExp fid pid fbody letrecexp) -> valueOf letrecexp 
                                                                        (extendEnv fid (ProcVal pid fbody env) env) 
                                                                        str
-
-
+          
+                        (BeginExp (e:[])) -> valueOf e env str  
+                        (BeginExp (e:es)) -> let (v,s') = valueOf e env str 
+                                             in
+                                               valueOf (BeginExp es) env s'
 
