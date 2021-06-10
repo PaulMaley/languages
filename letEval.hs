@@ -27,6 +27,8 @@ valueOf exp env str = case exp of
                         (ZeroQExp e) -> if (getNum . fst) (valueOf e env str) == 0
                                         then (BoolVal True, str)
                                         else (BoolVal False, str)
+                        -- Bug ... doesn't thread the store in the evaluation
+                        -- of the two exps !!
                         (DiffExp e1 e2) -> (NumVal (n1-n2), str)
                                            where
                                              n1 = (getNum . fst) (valueOf e1 env str)
