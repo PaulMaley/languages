@@ -21,6 +21,7 @@ import ParseEnv
 import LetEval
 import Env
 import Store 
+import Trace
 
 data Act = Help | ReadFile String | CmdLine
 
@@ -52,6 +53,6 @@ evaluate exp env = let pexp = parse lexp exp
                    in case (pexp,penv) of
                        ([],_) -> "Failed to parse expresssion"
                        (_,[]) -> "Failed to parse environment"
-                       ([(exp',_)],[(env',_)]) -> show (valueOf exp' env' (SIS []))  -- Empty Simple Int Store
+                       ([(exp',_)],[(env',_)]) -> show (valueOf exp' env' (SIS []) NulTr)  -- Empty Simple Int Store
 --                       ([(exp',_)],[(env',_)]) -> show (valueOf exp' env')
 

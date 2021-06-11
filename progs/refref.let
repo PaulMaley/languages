@@ -1,0 +1,5 @@
+Let x = NewRef(NewRef(0))
+        In Begin
+             SetRef(DeRef(x), 11);
+             DeRef(DeRef(x))
+           End

@@ -12,66 +12,99 @@ In the book the env returns SchemeTypes !!
 Also modify a bit ..... remove the Zero constructor ...
 
 Upgrade to include Store ...
+
+"Upgrade" to include a trace facility
 -}
 module LetEval (valueOf) where
 
 import DataTypes
 import Env 
 import Store 
+import Trace
 
+valueOf :: Trace t => LLExp -> Env -> Str -> t -> (Val,Str,t)
+valueOf exp env str tr = case exp of 
+                           (ConstExp x) -> (x,str,tloga ("ConstExp:"++show(x)) env tr)
+                           (VarExp id) -> ((applyEnv env id),str,tloga ("VarExp:"++id) env tr)
 
-valueOf :: LLExp -> Env -> Str -> (Val,Str)
-valueOf exp env str = case exp of 
-                        (ConstExp x) -> (x,str)
-                        (VarExp id) -> ((applyEnv env id),str)
-                        (ZeroQExp e) -> if (getNum . fst) (valueOf e env str) == 0
-                                        then (BoolVal True, str)
-                                        else (BoolVal False, str)
-                        -- Bug ... doesn't thread the store in the evaluation
-                        -- of the two exps !!
-                        (DiffExp e1 e2) -> (NumVal (n1-n2), str)
-                                           where
-                                             n1 = (getNum . fst) (valueOf e1 env str)
-                                             n2 = (getNum . fst) (valueOf e2 env str)
-
-                        (LetExp var valexp bodyexp) -> let (val,s1) = valueOf valexp env str
-                                                       in
-                                                         valueOf bodyexp (extendEnv var val env) s1  
-                        (NewRefExp e) -> let (val,s1) = valueOf e env str
-                                         in
-                                           newRef val s1 
-
-                        (DeRefExp e) -> let (val,s1) = valueOf e env str
-                                        in
-                                          (deRef val s1, s1)
-
-                        (SetRefExp e v) -> let (rval,s1) = valueOf e env str
-                                               (vval,s2) = valueOf v env s1
+                           (ZeroQExp e) -> let tr' = tloga ("ZeroQExp:"++show(e)) env tr
+                                               (v,str1,tr1) = valueOf e env str tr'
                                            in
-                                             (vval, setRef rval vval s2) 
+                                             (BoolVal (if getNum v  == 0 
+                                                       then True
+                                                       else False), str1, tr1)
 
-                        (IfExp pred et ef) -> let (b,s1) = valueOf pred env str 
-                                              in 
-                                                if getBool b
-                                                then valueOf et env s1
-                                                else valueOf ef env s1
+                           (DiffExp e1 e2) -> let tr' = tloga ("DiffExp:"++show(e1)++" "++show(e2)) env tr 
+                                                  (val1, s1, tr1) = valueOf e1 env str tr'
+                                                  (val2, s2, tr2) = valueOf e2 env s1 tr1
+                                              in
+                                                (NumVal ((getNum val1) - (getNum val2)), s2, tr2)
 
-                        (ProcExp var bodyexp) -> (ProcVal var bodyexp env, str) 
+                           (LetExp var valexp bodyexp) -> let tr' = tloga ("LetExp:" ++ var ++ " " ++
+                                                                           show(valexp) ++ " " ++
+                                                                           show(bodyexp)) env tr
+                                                              (val,s1,tr1) = valueOf valexp env str tr'
+                                                          in
+                                                            valueOf bodyexp (extendEnv var val env) s1 tr1  
 
-                        (CallExp rator rand) -> let (proc,s1) = valueOf rator env str 
-                                                    (rand',s2) = valueOf rand env s1 
-                                                    rho1 = extendEnv (getVarFromProc proc) 
-                                                                     rand' 
-                                                                     (getEnvFromProc proc)
-                                                in 
-                                                  valueOf (getBodyFromProc proc) rho1 s2 
+                           (IfExp pred et ef) -> let tr' = tloga ("IfExp:" ++ show(pred) ++ " " ++ 
+                                                                  show(et) ++ " " ++ show(ef)) env tr
+                                                     (b,s1,tr1) = valueOf pred env str tr'
+                                                     selexp = if (getBool b) 
+                                                              then et 
+                                                              else ef 
+                                                 in 
+                                                   valueOf selexp env s1 tr1 
+
+                           (ProcExp var bodyexp) -> let tr1 = tloga ("ProcExp:" ++ var ++ " " ++ show(bodyexp)) env tr
+                                                    in 
+                                                      (ProcVal var bodyexp env, str, tr1) 
+
+                           (CallExp rator rand) -> let tr' = tloga ("CallExp:" ++ show(rator) ++
+                                                                                  show(rand)) env tr 
+                                                       (proc,s1,tr1) = valueOf rator env str tr' 
+                                                       (rand',s2,tr2) = valueOf rand env s1 tr1 
+                                                       rho1 = extendEnv (getVarFromProc proc) 
+                                                                        rand' 
+                                                                        (getEnvFromProc proc)
+                                                   in 
+                                                     valueOf (getBodyFromProc proc) rho1 s2 tr2 
+
+                           (BeginExp (e:[])) -> let tr' = tloga ("BeginExp:" ++ show(e)) env tr
+                                                in
+                                                  valueOf e env str tr'  
+                           (BeginExp (e:es)) -> let tr' = tloga ("BeginExp:" ++ show(e)) env tr
+                                                    (v,s1,tr1) = valueOf e env str tr'
+                                                in
+                                                  valueOf (BeginExp es) env s1 tr1
+
+                           (NewRefExp e) -> let tr' = tloga ("NewRefExp:" ++ show(e)) env tr 
+                                                (val1,s1,t1) = valueOf e env str tr'
+                                                (val2,s2) = newRef val1 s1    
+                                            in
+                                              (val2,s2,t1) 
+
+                           (DeRefExp e) -> let tr' = tloga ("DeRefExp:" ++ show(e)) env tr
+                                               (val1,s1,t1) = valueOf e env str tr'
+                                           in
+                                             (deRef val1 s1,s1,t1)
+
+
+                           (SetRefExp e v) -> let tr' = tloga ("SetRefExp:" ++ show(e) ++ " " ++ show(v)) env tr 
+                                                  (rval,s1,t1) = valueOf e env str tr'
+                                                  (vval,s2,t2) = valueOf v env s1 t1
+                                                  s3 = setRef rval vval s2
+                                              in
+                                                (vval,s3,t2) 
+
+
+
+{--
+-- To reimplement !!
+-- Requires modification to extendEnv ??
+-- According to the book - yes
 
                         (LetRecExp fid pid fbody letrecexp) -> valueOf letrecexp 
                                                                        (extendEnv fid (ProcVal pid fbody env) env) 
                                                                        str
-          
-                        (BeginExp (e:[])) -> valueOf e env str  
-                        (BeginExp (e:es)) -> let (v,s') = valueOf e env str 
-                                             in
-                                               valueOf (BeginExp es) env s'
-
+--}

@@ -33,9 +33,13 @@ class Environment env where
 get :: Var -> LPV -> Val
 get v LPVEmpty = error ("Variable " ++ v ++ " not in environment !!")
 get v (LPV []) = error ("Variable " ++ v ++ " not in environment !!")
-get v (LPV ((e1var, ProcVal pid fbody e):es))
-  | v == e1var = ProcVal pid fbody (LPV ((e1var, ProcVal pid fbody e):es))
-  | otherwise = get v (LPV es)
+{-
+-- Commented code is major bug introduced when implementing letrec !!
+-- Code now removed but to fix now : Implementation of letrec !!
+--get v (LPV ((e1var, ProcVal pid fbody e):es))
+--  | v == e1var = ProcVal pid fbody (LPV ((e1var, ProcVal pid fbody e):es))
+--  | otherwise = get v (LPV es)
+-}
 get v (LPV ((e1var,e1val):es)) 
   | v == e1var = e1val
   | otherwise = get v (LPV es)

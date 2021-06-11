@@ -2,8 +2,18 @@ module DataTypes where
 
 type Ref = Int
 
+-- Concrete imlpementation of a Trace facility
+type Entry = String
+data BT = T [Entry] deriving (Show) 
+type Tr = BT
+
+data NulTr = NulTr deriving (Show)
+type NTr = NulTr
+
+-- Concrete implementation of an environment
 data LPV = LPVEmpty | LPV [(Var,Val)] deriving (Show)
 
+-- Concrete implementation of a store
 data SIS = SIS [(Val,Val)] deriving (Show)
 type Str = SIS
 
@@ -43,6 +53,10 @@ class Store str where
   newRef :: Val -> str -> (Val,str)
   deRef :: Val -> str -> Val
   setRef :: Val -> Val -> str -> str
+
+class Trace tr where 
+  tlog :: Entry -> tr -> tr
+  tloga :: (Environment env,Show env) => Entry -> env -> tr -> tr 
 
 data LLExp = ConstExp Val
                   | DiffExp LLExp  LLExp
