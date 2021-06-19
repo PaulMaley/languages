@@ -67,9 +67,22 @@ valueOf exp env str tr = case exp of
                                                        rho1 = extendEnv (getVarFromProc proc) 
                                                                         rand' 
                                                                         (getEnvFromProc proc)
+                                                       rho2 = case proc of 
+                                                                (ProcVal _ _ _) -> rho1
+                                                                (RecProcVal fid pid body env) -> extendEnv fid proc rho1
+                                                   in 
+                                                     valueOf (getBodyFromProc proc) rho2 s2 tr2 
+{-
+                           (CallExp rator rand) -> let tr' = tloga ("CallExp:" ++ show(rator) ++
+                                                                                  show(rand)) env tr 
+                                                       (proc,s1,tr1) = valueOf rator env str tr' 
+                                                       (rand',s2,tr2) = valueOf rand env s1 tr1 
+                                                       rho1 = extendEnv (getVarFromProc proc) 
+                                                                        rand' 
+                                                                        (getEnvFromProc proc)
                                                    in 
                                                      valueOf (getBodyFromProc proc) rho1 s2 tr2 
-
+-}
                            (BeginExp (e:[])) -> let tr' = tloga ("BeginExp:" ++ show(e)) env tr
                                                 in
                                                   valueOf e env str tr'  
@@ -98,6 +111,11 @@ valueOf exp env str tr = case exp of
                                                 (vval,s3,t2) 
 
 
+                           (LetRecExp fid pid fbody letrecexp) -> let tr' = tloga ("LetRecExp:") env tr
+                                                                  in 
+                                                                    valueOf letrecexp 
+                                                                       (extendEnv fid (RecProcVal fid pid fbody env) env) 
+                                                                       str tr'
 
 {--
 -- To reimplement !!

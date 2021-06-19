@@ -19,7 +19,13 @@ type Str = SIS
 
 type Var = String
 type Env = LPV  
-data Val = BoolVal Bool | NumVal Int | ProcVal Var LLExp Env | RefVal Ref  deriving (Show)
+data Val 
+         = BoolVal Bool
+         | NumVal Int
+         | ProcVal Var LLExp Env
+         | RecProcVal Var Var LLExp Env
+         | RefVal Ref
+         deriving (Show)
 
 getNum :: Val -> Int
 getNum (NumVal n) = n
@@ -31,14 +37,17 @@ getBool _ = error "Non boolean value"
 
 getVarFromProc :: Val -> Var
 getVarFromProc (ProcVal var _ _) = var
+getVarFromProc (RecProcVal _ var _ _) = var
 getVarFromProc _ = error "Non Proc value"
 
 getBodyFromProc :: Val -> LLExp
 getBodyFromProc (ProcVal _ body _) = body
+getBodyFromProc (RecProcVal _ _ body _) = body
 getBodyFromProc _ = error "Non Proc value"
 
 getEnvFromProc :: Val -> Env
 getEnvFromProc (ProcVal _ _ env) = env
+getEnvFromProc (RecProcVal _ _ _ env) = env
 getEnvFromProc _ = error "Non Proc value"
 
 class Environment env where 

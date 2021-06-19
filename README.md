@@ -106,6 +106,30 @@ which is more complicated (`Begin` expresssion).
 **This problem already existed** so merge back into `master` and
 introduce `trace`facility to see what is happening ...
 
+So ... the problem is fairly clear -- when evaluating a 
+`ProcExp` the resulting `ProcVal` has an environment that doesn't 
+contain a reference to itself. This was clear from the start, but 
+the code implemented to deal with this doesn't work as even
+if I explicitly include the function into the environment on the
+first invocation, following invocations use the environment from
+the `ProcVal` which lacks the reference, hence we finish with 
+`Not found in Environment`.  
+
+I will now try by addinga new type `RecProcVal` for recursive
+functions and evaluate them differently from `ProcVal`s; Specifically
+readding an entry to the environment on each invocation.
+  
+Seems to have worked !! Now need to implement a test suite to keep
+track that things don't get broken.
+
+
+
+
+ 
+
+
+
+
 
 
 
