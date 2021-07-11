@@ -32,6 +32,7 @@ lexp = do
        <|> lderef
        <|> lsetref
        <|> lbegin
+       <|> lset
 
 lconst :: Parser LLExp
 lconst = do
@@ -158,6 +159,16 @@ lexplist = do
             <|> do
                   e <- lexp
                   return [e]
+
+lset :: Parser LLExp
+lset = do
+         symbol "Set"
+         id <- identifier
+         symbol "="
+         e <- lexp
+         return (SetExp id e)
+
+
 
 
          

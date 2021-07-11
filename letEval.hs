@@ -25,7 +25,17 @@ import Trace
 valueOf :: Trace t => LLExp -> Env -> Str -> t -> (Val,Str,t)
 valueOf exp env str tr = case exp of 
                            (ConstExp x) -> (x,str,tloga ("ConstExp:"++show(x)) env tr)
+
+                           -- Modify semantics : VarExp evaluates to a RefVal which is 
+                           -- retrieved from the store
+                           (VarExp id) -> let tr1 = tloga ("VarExp:"++id) env tr
+                                              ref = applyEnv env id
+                                          in 
+                                            (deRef ref str, str, tr1)
+
+                           {-
                            (VarExp id) -> ((applyEnv env id),str,tloga ("VarExp:"++id) env tr)
+                           -}
 
                            (ZeroQExp e) -> let tr' = tloga ("ZeroQExp:"++show(e)) env tr
                                                (v,str1,tr1) = valueOf e env str tr'
@@ -39,13 +49,35 @@ valueOf exp env str tr = case exp of
                                                   (val2, s2, tr2) = valueOf e2 env s1 tr1
                                               in
                                                 (NumVal ((getNum val1) - (getNum val2)), s2, tr2)
-
+                  
+                           -- Modify semantics : Let now modifies the store and puts a reference into
+                           -- the environment
+                           (LetExp var valexp bodyexp) -> let tr' = tloga ("LetExp:" ++ var ++ " " ++
+                                                                           show(valexp) ++ " " ++
+                                                                           show(bodyexp)) env tr
+                                                              (val,s1,tr1) = valueOf valexp env str tr'
+                                                              (ref,s2) = newRef val s1
+                                                              e1 = extendEnv var ref env 
+                                                          in
+                                                            valueOf bodyexp e1 s2 tr1  
+                          
+                           {- 
                            (LetExp var valexp bodyexp) -> let tr' = tloga ("LetExp:" ++ var ++ " " ++
                                                                            show(valexp) ++ " " ++
                                                                            show(bodyexp)) env tr
                                                               (val,s1,tr1) = valueOf valexp env str tr'
                                                           in
                                                             valueOf bodyexp (extendEnv var val env) s1 tr1  
+                           -}
+ 
+                           -- Semantics : var must refer to a variable existing in the environment
+                           -- these varaibles will now all be references to the store
+                           (SetExp var valexp) -> let tr' = tloga ("SetExp:" ++ var ++ " " ++
+                                                                           show(valexp)) env tr
+                                                      (val1,s1,tr1) = valueOf valexp env str tr'
+                                                      s2 = setRef (applyEnv env var) val1 s1
+                                                  in
+                                                    (val1,s2,tr1) 
 
                            (IfExp pred et ef) -> let tr' = tloga ("IfExp:" ++ show(pred) ++ " " ++ 
                                                                   show(et) ++ " " ++ show(ef)) env tr
@@ -60,6 +92,23 @@ valueOf exp env str tr = case exp of
                                                     in 
                                                       (ProcVal var bodyexp env, str, tr1) 
 
+
+                           (CallExp rator rand) -> let tr' = tloga ("CallExp:" ++ show(rator) ++
+                                                                                  show(rand)) env tr 
+                                                       (proc,s1,tr1) = valueOf rator env str tr' 
+                                                       (rand',s2,tr2) = valueOf rand env s1 tr1
+                                                       (ref,s3) = newRef  rand' s2 
+                                                       rho1 = extendEnv (getVarFromProc proc) 
+                                                                        ref
+                                                                        (getEnvFromProc proc)
+                                                       (rho2,s5) = case proc of 
+                                                                    (ProcVal _ _ _) -> (rho1, s3)
+                                                                    (RecProcVal fid pid body env) -> 
+                                                                      let (ref', s4) = newRef proc s3
+                                                                      in (extendEnv fid ref' rho1, s4)
+                                                   in 
+                                                     valueOf (getBodyFromProc proc) rho2 s5 tr2 
+{-
                            (CallExp rator rand) -> let tr' = tloga ("CallExp:" ++ show(rator) ++
                                                                                   show(rand)) env tr 
                                                        (proc,s1,tr1) = valueOf rator env str tr' 
@@ -72,6 +121,7 @@ valueOf exp env str tr = case exp of
                                                                 (RecProcVal fid pid body env) -> extendEnv fid proc rho1
                                                    in 
                                                      valueOf (getBodyFromProc proc) rho2 s2 tr2 
+-}
 {-
                            (CallExp rator rand) -> let tr' = tloga ("CallExp:" ++ show(rator) ++
                                                                                   show(rand)) env tr 
@@ -110,12 +160,21 @@ valueOf exp env str tr = case exp of
                                               in
                                                 (vval,s3,t2) 
 
-
+                           -- Modify semantics for implicit refs
+                           (LetRecExp fid pid fbody letrecexp) -> let tr' = tloga ("LetRecExp:") env tr
+                                                                      (ref, s1) = newRef 
+                                                                                    (RecProcVal fid pid fbody env) str
+                                                                  in
+                                                                     valueOf letrecexp 
+                                                                             (extendEnv fid ref env) 
+                                                                             s1 tr'
+{-
                            (LetRecExp fid pid fbody letrecexp) -> let tr' = tloga ("LetRecExp:") env tr
                                                                   in 
                                                                     valueOf letrecexp 
                                                                        (extendEnv fid (RecProcVal fid pid fbody env) env) 
                                                                        str tr'
+-}
 
 {--
 -- To reimplement !!

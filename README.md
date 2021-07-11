@@ -122,7 +122,21 @@ readding an entry to the environment on each invocation.
 Seems to have worked !! Now need to implement a test suite to keep
 track that things don't get broken.
 
+## Implicit refs
+This seems like a fairly fundamental change - it will probably give a 
+second version of the code .... let's see.
 
+### Modifications
+Introduce `Set` into the language. This will essentially ba a statement
+and so only makes sense within a `Begin` `End` block.
+
+OK, modified all of code (Let, LetRec, etc.) so that the environment 
+only contains `RefVal`s which point to the real values in the store.
+(Actually the environment also contains `NumVal`s and `BoolVal`s still).
+
+Code seems to work ok but is getting messy !!
+
+Next stage is to add in statements.
 
 
  
