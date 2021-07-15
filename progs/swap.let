@@ -1,0 +1,12 @@
+Let swap = Proc (x) Proc (y) 
+            Let temp = x
+                  In Begin
+                      Set x = y;
+                      Set y = temp
+                     End
+      In Let a = 33
+         In Let b = 44
+            In Begin
+                ((swap a) b);
+                -(a,b) 
+               End
