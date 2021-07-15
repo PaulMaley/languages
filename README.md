@@ -100,37 +100,37 @@ placed into the store.
 "Let f = Let y = 1 In Proc (x) y In (f 3)"
 ```
 Gives `y` not found in the Environment .... this is similar to the
-structure of the `counter` program which is giving problems but 
+structure of the `counter` program which is giving problems but
 which is more complicated (`Begin` expresssion).
 
 **This problem already existed** so merge back into `master` and
 introduce `trace`facility to see what is happening ...
 
-So ... the problem is fairly clear -- when evaluating a 
-`ProcExp` the resulting `ProcVal` has an environment that doesn't 
-contain a reference to itself. This was clear from the start, but 
+So ... the problem is fairly clear -- when evaluating a
+`ProcExp` the resulting `ProcVal` has an environment that doesn't
+contain a reference to itself. This was clear from the start, but
 the code implemented to deal with this doesn't work as even
 if I explicitly include the function into the environment on the
 first invocation, following invocations use the environment from
-the `ProcVal` which lacks the reference, hence we finish with 
+the `ProcVal` which lacks the reference, hence we finish with
 `Not found in Environment`.  
 
 I will now try by addinga new type `RecProcVal` for recursive
 functions and evaluate them differently from `ProcVal`s; Specifically
 readding an entry to the environment on each invocation.
-  
+
 Seems to have worked !! Now need to implement a test suite to keep
 track that things don't get broken.
 
 ## Implicit refs
-This seems like a fairly fundamental change - it will probably give a 
+This seems like a fairly fundamental change - it will probably give a
 second version of the code .... let's see.
 
 ### Modifications
 Introduce `Set` into the language. This will essentially ba a statement
 and so only makes sense within a `Begin` `End` block.
 
-OK, modified all of code (Let, LetRec, etc.) so that the environment 
+OK, modified all of code (Let, LetRec, etc.) so that the environment
 only contains `RefVal`s which point to the real values in the store.
 (Actually the environment also contains `NumVal`s and `BoolVal`s still).
 
@@ -138,12 +138,41 @@ Code seems to work ok but is getting messy !!
 
 Next stage is to add in statements.
 
+### Mini-implementation
+So, Left the main program unchanged and worked on a mini-version which
+combines statements and expressions. Whats more it's based on `Monad`s;
+this was major brain ache.
 
- 
+The code is in the files
+```
+dataStatements.hs
+evalStatements.hs
+parseStatements.hs
+```
+Expressions return values -- there is no environment so variables are
+stored in the global store (implemented with the `StateT` monad). statements
+return no value but can alter the state of the store and print things --
+thus the IO monad. The whole thing is based around :
 
+```
+type Var = String
+data Val = NumVal Int | BoolVal Bool -- as before
+type MyState = StateT [(Var,Val)] IO ()
+```
 
-
-
-
-
-
+Examples:
+```
+\>se = (fst . head) $  parse lstat "{x=1; Print x; y=3; Print y; Print -(y,x)}"
+\>se
+LStatList [LStatAssign "x" (ConstExp (NumVal 1)),
+           LStatPrint (VarExp "x"),
+           LStatAssign "y" (ConstExp (NumVal 3)),
+           LStatPrint (VarExp "y"),
+           LStatPrint (DiffExp (VarExp "y") (VarExp "x"))]
+\>runStateT (execute se) []
+NumVal 1
+NumVal 3
+NumVal 2
+((),[("y",NumVal 3),("x",NumVal 1)])
+```
+(`CR`s added for clarity)
