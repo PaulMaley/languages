@@ -176,3 +176,29 @@ NumVal 2
 ((),[("y",NumVal 3),("x",NumVal 1)])
 ```
 (`CR`s added for clarity)
+
+
+## Continuation passing
+Attacking chapter 5 -- Tricky.  
+Gone back to a basic implementatin of `LetRec` but this time via 
+a continuation passing interpreter. Works ok so far (but recursive
+function definitions not yet implemented).
+
+Files are:
+ - `contEval.hs` for the interpreter
+ - `cont.hs` a small arithmetic interpreter to figure out CSP
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
